@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="https://github.com/Dotcommando/organism-model/xsd/0.1.0-draft"
+        xmlns="https://github.com/Dotcommando/organism-model/xsd/0.1.0-draft"
+        elementFormDefault="qualified"
+        attributeFormDefault="unqualified">
+
+    <!--
+      Organism Model XML (OMX) version 0.1.0-draft
+      Namespace: https://github.com/Dotcommando/organism-model/xsd/0.1.0-draft
+      Repository: https://github.com/Dotcommando/organism-model
+      This schema describes a structure for modeling organisms, their systems, organs,
+      resources, processes, and cycles. Genes and genetics are out of scope.
+    -->
+
+    <!-- ********** Simple Types ********** -->
+    <xs:simpleType name="ResourceTypeEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="simple"/>
+            <xs:enumeration value="complex"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="TimestampType">
+        <xs:restriction base="xs:string"/>
+    </xs:simpleType>
+
+    <xs:simpleType name="LogicalOperatorType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="and"/>
+            <xs:enumeration value="or"/>
+            <xs:enumeration value="not"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="SystemTypeEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="respiratory"/>
+            <xs:enumeration value="transport"/>
+            <xs:enumeration value="nervous"/>
+            <xs:enumeration value="digestive"/>
+            <xs:enumeration value="excretory"/>
+            <xs:enumeration value="sensory"/>
+            <xs:enumeration value="musculoskeletal"/>
+            <xs:enumeration value="endocrine"/>
+            <xs:enumeration value="reproductive"/>
+            <xs:enumeration value="other"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ModeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="active"/>
+            <xs:enumeration value="inactive"/>
+            <xs:enumeration value="resting"/>
+            <xs:enumeration value="maintenance"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="OverflowBehaviorType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="discard"/>
+            <xs:enumeration value="passthrough"/>
+            <xs:enumeration value="convert"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ProximityType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="near"/>
+            <xs:enumeration value="far"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- ********** Complex Types ********** -->
+    <xs:complexType name="ParentRefType">
+        <xs:attribute name="id" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="SexRefType">
+        <xs:attribute name="id" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="MetadataType">
+        <xs:sequence>
+            <xs:element name="species" type="xs:string"/>
+            <xs:element name="id" type="xs:string"/>
+            <xs:element name="parents" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="parent" type="ParentRefType" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="birthTimestamp" type="TimestampType"/>
+            <xs:element name="sexRef" type="SexRefType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ComponentResourceType">
+        <xs:attribute name="resourceName" type="xs:string" use="required"/>
+        <xs:attribute name="amount" type="xs:decimal" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="ComplexResourceComponentsType">
+        <xs:sequence>
+            <xs:element name="component" type="ComponentResourceType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ResourceDefType">
+        <xs:sequence>
+            <xs:element name="components" type="ComplexResourceComponentsType" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="type" type="ResourceTypeEnum" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="ResourcesType">
+        <xs:sequence>
+            <xs:element name="resource" type="ResourceDefType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ResourceConditionType">
+        <xs:attribute name="resourceName" type="xs:string" use="required"/>
+        <xs:attribute name="minAmount" type="xs:decimal" use="optional"/>
+        <xs:attribute name="maxAmount" type="xs:decimal" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="OrganStateConditionType">
+        <xs:attribute name="organId" type="xs:string" use="required"/>
+        <xs:attribute name="alive" type="xs:boolean" use="optional"/>
+        <xs:attribute name="healthy" type="xs:boolean" use="optional"/>
+    </xs:complexType>
+
+    <!-- Sensory Condition Type -->
+    <xs:complexType name="SensoryConditionType">
+        <xs:attribute name="species" type="xs:string" use="required"/>
+        <xs:attribute name="proximity" type="ProximityType" use="optional" default="near"/>
+        <xs:attribute name="presence" type="xs:boolean" use="optional" default="true"/>
+        <xs:attribute name="requiredAccuracy" type="xs:decimal" use="optional" default="1.0"/>
+        <xs:attribute name="requiredRange" type="xs:decimal" use="optional" default="10.0"/>
+    </xs:complexType>
+
+    <xs:complexType name="ConditionLogicType">
+        <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="resourceCondition" type="ResourceConditionType"/>
+                <xs:element name="organStateCondition" type="OrganStateConditionType"/>
+                <xs:element name="sensoryCondition" type="SensoryConditionType"/>
+                <xs:element name="logic" type="ConditionLogicType"/>
+            </xs:choice>
+        </xs:sequence>
+        <xs:attribute name="operator" type="LogicalOperatorType" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="TriggerType">
+        <xs:sequence>
+            <xs:element name="conditions" type="ConditionLogicType" minOccurs="0"/>
+            <xs:element name="externalFactor" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="factorName" type="xs:string" use="required"/>
+                    <xs:attribute name="minValue" type="xs:decimal" use="optional"/>
+                    <xs:attribute name="maxValue" type="xs:decimal" use="optional"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="StorageType">
+        <xs:sequence>
+            <xs:element name="storedResource" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="resourceName" type="xs:string" use="required"/>
+                    <xs:attribute name="maxCapacity" type="xs:decimal" use="required"/>
+                    <xs:attribute name="accumulationRate" type="xs:decimal" use="optional"/>
+                    <xs:attribute name="overflowBehavior" type="OverflowBehaviorType" use="optional" default="discard"/>
+                    <xs:attribute name="overflowTargetResource" type="xs:string" use="optional"/>
+                    <xs:attribute name="overflowTargetSystemId" type="xs:string" use="optional"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Sensory Capabilities for the Sensory System -->
+    <xs:complexType name="SensoryCapabilitiesType">
+        <xs:attribute name="maxRange" type="xs:decimal" use="optional" default="10.0"/>
+        <xs:attribute name="accuracy" type="xs:decimal" use="optional" default="1.0"/>
+    </xs:complexType>
+
+    <xs:complexType name="SystemResourceFlowsType">
+        <xs:sequence>
+            <xs:element name="inputs" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="input" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="resourceName" type="xs:string" use="required"/>
+                                <xs:attribute name="amount" type="xs:decimal" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="consumption" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="consume" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="resourceName" type="xs:string" use="required"/>
+                                <xs:attribute name="amount" type="xs:decimal" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="transferToSystems" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="transfer" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="resourceName" type="xs:string" use="required"/>
+                                <xs:attribute name="amount" type="xs:decimal" use="required"/>
+                                <xs:attribute name="targetSystemId" type="xs:string" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="receiveFromSystems" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="receive" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="resourceName" type="xs:string" use="required"/>
+                                <xs:attribute name="amount" type="xs:decimal" use="required"/>
+                                <xs:attribute name="sourceSystemId" type="xs:string" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="outputs" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="output" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="resourceName" type="xs:string" use="required"/>
+                                <xs:attribute name="amount" type="xs:decimal" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="storage" type="StorageType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="SystemType">
+        <xs:sequence>
+            <xs:element name="description" type="xs:string" minOccurs="0"/>
+            <xs:element name="organs" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="organRef" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="id" type="xs:string" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="penetration" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="systemRef" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="id" type="xs:string" use="required"/>
+                                <xs:attribute name="level" type="xs:string" use="optional"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="sexes" type="SexesType" minOccurs="0"/>
+            <!-- Resource flows on a system level, including storage -->
+            <xs:element name="resourceFlows" type="SystemResourceFlowsType" minOccurs="0"/>
+            <!-- Sensory Capabilities for sensory system only -->
+            <xs:element name="sensoryCapabilities" type="SensoryCapabilitiesType" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:string" use="required"/>
+        <xs:attribute name="type" type="SystemTypeEnum" use="required"/>
+        <xs:attribute name="mode" type="ModeType" use="optional" default="active"/>
+        <xs:attribute name="initialMode" type="ModeType" use="optional" default="active"/>
+    </xs:complexType>
+
+    <xs:complexType name="SystemsType">
+        <xs:sequence>
+            <xs:element name="system" type="SystemType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="SexType">
+        <xs:sequence>
+            <xs:element name="sexualOrganRef" type="ParentRefType" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:string" use="required"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="SexesType">
+        <xs:sequence>
+            <xs:element name="sex" type="SexType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="OrganType">
+        <xs:sequence>
+            <xs:element name="description" type="xs:string" minOccurs="0"/>
+            <xs:element name="linkedProcesses" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="processRef" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="id" type="xs:string" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="linkedCycles" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="cycleRef" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="id" type="xs:string" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:string" use="required"/>
+        <xs:attribute name="name" type="xs:string" use="optional"/>
+        <xs:attribute name="mode" type="ModeType" use="optional" default="active"/>
+        <xs:attribute name="initialMode" type="ModeType" use="optional" default="active"/>
+    </xs:complexType>
+
+    <xs:complexType name="OrgansType">
+        <xs:sequence>
+            <xs:element name="organ" type="OrganType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ResourceIOType">
+        <xs:sequence>
+            <xs:element name="input" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="resourceName" type="xs:string" use="required"/>
+                    <xs:attribute name="amount" type="xs:decimal" use="required"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="output" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="resourceName" type="xs:string" use="required"/>
+                    <xs:attribute name="amount" type="xs:decimal" use="required"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ProcessType">
+        <xs:sequence>
+            <xs:element name="description" type="xs:string" minOccurs="0"/>
+            <xs:element name="trigger" type="TriggerType" minOccurs="0"/>
+            <xs:element name="organsInvolved" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="organRef" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="id" type="xs:string" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="resourceIO" type="ResourceIOType" minOccurs="0"/>
+            <xs:element name="duration" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="timeUnits" type="xs:string" use="optional" default="days"/>
+                    <xs:attribute name="value" type="xs:decimal" use="required"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="repetition" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="repeat" type="xs:boolean" use="optional" default="false"/>
+                    <xs:attribute name="interval" type="xs:decimal" use="optional"/>
+                    <xs:attribute name="intervalUnits" type="xs:string" use="optional" default="days"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="ProcessesType">
+        <xs:sequence>
+            <xs:element name="process" type="ProcessType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="CycleType">
+        <xs:sequence>
+            <xs:element name="description" type="xs:string" minOccurs="0"/>
+            <xs:element name="trigger" type="TriggerType" minOccurs="0"/>
+            <xs:element name="organsInvolved" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="organRef" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="id" type="xs:string" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="processRefs" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="processRef" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="id" type="xs:string" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="repetition" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="repeat" type="xs:boolean" use="optional" default="true"/>
+                    <xs:attribute name="interval" type="xs:decimal" use="optional"/>
+                    <xs:attribute name="intervalUnits" type="xs:string" use="optional" default="days"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="CyclesType">
+        <xs:sequence>
+            <xs:element name="cycle" type="CycleType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Root element -->
+    <xs:element name="OrganismModel">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="metadata" type="MetadataType"/>
+                <xs:element name="Resources" type="ResourcesType" minOccurs="0"/>
+                <xs:element name="Systems" type="SystemsType" minOccurs="0"/>
+                <xs:element name="Organs" type="OrgansType" minOccurs="0"/>
+                <xs:element name="Cells" type="OrgansType" minOccurs="0"/>
+                <xs:element name="Organelles" type="OrgansType" minOccurs="0"/>
+                <xs:element name="Processes" type="ProcessesType" minOccurs="0"/>
+                <xs:element name="Cycles" type="CyclesType" minOccurs="0"/>
+            </xs:sequence>
+            <xs:attribute name="version" type="xs:string" use="required" fixed="0.1.0-draft"/>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>
