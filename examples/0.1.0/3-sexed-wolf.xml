@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OrganismModel version="0.1.0"
+               xmlns="https://github.com/Dotcommando/organism-model/xsd/0.1.0"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="https://github.com/Dotcommando/organism-model/xsd/0.1.0 https://dotcommando.github.io/organism-model/xsd/0.1.0/organism-model.xsd">
+
+    <metadata>
+        <species>Three-Sexed Wolf</species>
+        <id>wolf_001</id>
+        <birthTimestamp>2025-01-01T10:00:00Z</birthTimestamp>
+        <sexRef id="sex_female"/>
+    </metadata>
+
+    <Resources>
+        <!-- Simple resources -->
+        <resource name="oxygen" type="simple"/>
+        <resource name="nitrogen" type="simple"/>
+        <resource name="phosphorus" type="simple"/>
+        <resource name="potassium" type="simple"/>
+        <resource name="carbon" type="simple"/>
+        <resource name="water" type="simple"/>
+
+        <!-- Complex resources -->
+        <resource name="carbonDioxide" type="complex"/>
+        <resource name="glucose" type="complex"/>
+        <resource name="ATP" type="complex"/>
+        <resource name="deadPlantOrganic" type="complex"/>
+        <resource name="livingPlantOrganic" type="complex"/>
+        <resource name="deadAnimalOrganic" type="complex"/>
+        <resource name="livingAnimalOrganic" type="complex"/>
+        <resource name="excrement" type="complex"/>
+    </Resources>
+
+    <Systems>
+        <!-- Respiratory system -->
+        <system id="sys_respiratory" type="respiratory">
+            <description>Handles gas exchange: intake O2, output CO2.</description>
+            <resourceFlows>
+                <inputs>
+                    <input resourceName="oxygen" amount="10"/>
+                </inputs>
+                <consumption>
+                    <consume resourceName="oxygen" amount="2"/>
+                </consumption>
+                <transferTo>
+                    <transfer resourceName="oxygen" amount="8" targetId="sys_circulatory"/>
+                </transferTo>
+                <outputs>
+                    <output resourceName="carbonDioxide" amount="2"/>
+                </outputs>
+            </resourceFlows>
+        </system>
+
+        <!-- Circulatory (transport) system -->
+        <system id="sys_circulatory" type="transport">
+            <description>Transports gases and nutrients between systems.</description>
+            <resourceFlows>
+                <receiveFrom>
+                    <receive resourceName="oxygen" amount="8" sourceId="sys_respiratory"/>
+                    <receive resourceName="glucose" amount="5" sourceId="sys_digestive"/>
+                    <receive resourceName="ATP" amount="3" sourceId="sys_digestive"/>
+                    <receive resourceName="carbonDioxide" amount="2" sourceId="sys_nervous"/>
+                    <receive resourceName="carbonDioxide" amount="1" sourceId="sys_sensory"/>
+                </receiveFrom>
+                <transferTo>
+                    <transfer resourceName="oxygen" amount="4" targetId="sys_nervous"/>
+                    <transfer resourceName="oxygen" amount="4" targetId="sys_sensory"/>
+                    <transfer resourceName="glucose" amount="3" targetId="sys_nervous"/>
+                    <transfer resourceName="glucose" amount="2" targetId="sys_sensory"/>
+                    <transfer resourceName="ATP" amount="2" targetId="sys_nervous"/>
+                    <transfer resourceName="ATP" amount="1" targetId="sys_sensory"/>
+                </transferTo>
+                <outputs>
+                    <output resourceName="carbonDioxide" amount="3"/>
+                </outputs>
+            </resourceFlows>
+        </system>
+
+        <!-- Nervous system -->
+        <system id="sys_nervous" type="nervous">
+            <description>Processes information, consumes oxygen and nutrients, produces CO2.</description>
+            <resourceFlows>
+                <consumption>
+                    <consume resourceName="oxygen" amount="4"/>
+                    <consume resourceName="glucose" amount="3"/>
+                    <consume resourceName="ATP" amount="2"/>
+                </consumption>
+                <transferTo>
+                    <transfer resourceName="carbonDioxide" amount="2" targetId="sys_circulatory"/>
+                </transferTo>
+            </resourceFlows>
+        </system>
+
+        <!-- Sensory system -->
+        <system id="sys_sensory" type="sensory">
+            <description>Provides sensory information about nearby organisms.</description>
+            <resourceFlows>
+                <consumption>
+                    <consume resourceName="ATP" amount="2"/>
+                    <consume resourceName="oxygen" amount="1"/>
+                </consumption>
+            </resourceFlows>
+            <sensoryCapabilities maxRange="15.0" accuracy="2.0"/>
+        </system>
+
+        <!-- Sexual (reproductive) system -->
+        <system id="sys_sexual" type="reproductive">
+            <description>Manages reproductive aspects, stores livingAnimalOrganic.</description>
+            <sexes>
+                <sex id="sex_female" name="Female">
+                    <sexualOrganRef id="org_femaleSex"/>
+                </sex>
+                <sex id="sex_primaMale" name="Prima-male">
+                    <sexualOrganRef id="org_primaMaleSex"/>
+                </sex>
+                <sex id="sex_secundaMale" name="Secunda-male">
+                    <sexualOrganRef id="org_secundaMaleSex"/>
+                </sex>
+            </sexes>
+            <resourceFlows>
+                <storage>
+                    <storedResource
+                            resourceName="livingAnimalOrganic"
+                            maxCapacity="50"
+                            accumulationRate="5"
+                            overflowBehavior="discard"/>
+                </storage>
+            </resourceFlows>
+        </system>
+
+        <!-- Digestive system -->
+        <system id="sys_digestive" type="digestive">
+            <description>Breaks down living animal organic matter into glucose and ATP.</description>
+            <resourceFlows>
+                <inputs>
+                    <input resourceName="livingAnimalOrganic" amount="10"/>
+                </inputs>
+                <consumption>
+                    <consume resourceName="livingAnimalOrganic" amount="10"/>
+                </consumption>
+                <transferTo>
+                    <transfer resourceName="glucose" amount="5" targetId="sys_circulatory"/>
+                    <transfer resourceName="ATP" amount="3" targetId="sys_circulatory"/>
+                </transferTo>
+                <outputs>
+                    <output resourceName="excrement" amount="2"/>
+                </outputs>
+            </resourceFlows>
+        </system>
+
+        <!-- Excretory system -->
+        <system id="sys_excretory" type="excretory">
+            <description>Removes waste products from the organism.</description>
+            <resourceFlows>
+                <receiveFrom>
+                    <receive resourceName="excrement" amount="2" sourceId="sys_digestive"/>
+                </receiveFrom>
+                <transferTo>
+                    <!-- "external" means we release it into the environment -->
+                    <transfer resourceName="excrement" amount="2" targetId="external"/>
+                </transferTo>
+            </resourceFlows>
+        </system>
+
+    </Systems>
+
+    <!-- Organs, Cells, Organelles could be defined here if needed -->
+    <Organs>
+        <!-- For the example, we have sexual organs referenced in sexes,
+             we could define them here if needed -->
+        <organ id="org_femaleSex">
+            <description>Female reproductive organ</description>
+        </organ>
+        <organ id="org_primaMaleSex">
+            <description>Prima-male reproductive organ</description>
+        </organ>
+        <organ id="org_secundaMaleSex">
+            <description>Secunda-male reproductive organ</description>
+        </organ>
+    </Organs>
+
+    <Processes>
+        <process id="proc_reproduction">
+            <description>Reproductive process that uses stored livingAnimalOrganic to produce offspring.</description>
+        </process>
+        <process id="proc_feeding">
+            <description>Feeding process initiated upon detecting prey, consuming livingAnimalOrganic.</description>
+        </process>
+        <process id="proc_energy_maintenance">
+            <description>Adjusts consumption or seeks food if ATP is low.</description>
+        </process>
+    </Processes>
+
+    <Cycles>
+        <cycle id="cycle_reproduction">
+            <description>Reproduction cycle triggered by sensory detection of a mate nearby.</description>
+            <trigger>
+                <conditions operator="and">
+                    <sensoryCondition
+                            species="Three-Sexed Wolf"
+                            proximity="near"
+                            presence="true"
+                            requiredAccuracy="1.0"
+                            requiredRange="10.0"/>
+                </conditions>
+            </trigger>
+            <processRefs>
+                <processRef id="proc_reproduction"/>
+            </processRefs>
+            <repetition repeat="false"/>
+        </cycle>
+
+        <cycle id="cycle_feeding">
+            <description>Feeding cycle triggered by sensory detection of prey (Deer) nearby.</description>
+            <trigger>
+                <conditions operator="and">
+                    <sensoryCondition
+                            species="Deer"
+                            proximity="near"
+                            presence="true"
+                            requiredAccuracy="1.5"
+                            requiredRange="12.0"/>
+                </conditions>
+            </trigger>
+            <processRefs>
+                <processRef id="proc_feeding"/>
+            </processRefs>
+            <repetition repeat="false"/>
+        </cycle>
+
+        <cycle id="cycle_energy_maintenance">
+            <description>Energy maintenance triggered by low ATP.</description>
+            <trigger>
+                <conditions operator="and">
+                    <resourceCondition resourceName="ATP" maxAmount="2"/>
+                </conditions>
+            </trigger>
+            <processRefs>
+                <processRef id="proc_energy_maintenance"/>
+            </processRefs>
+            <repetition repeat="true" interval="1" intervalUnits="days"/>
+        </cycle>
+    </Cycles>
+
+</OrganismModel>
