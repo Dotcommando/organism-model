@@ -1,0 +1,35 @@
+{
+  "name": "organism-model",
+  "version": "0.1.0",
+  "license": "MIT",
+  "author": "Mikhail Filchushkin <webestet@gmail.com>",
+  "keywords": [
+    "XML",
+    "XSD",
+    "Organism Modeling",
+    "Biological Models",
+    "Evolution Simulation",
+    "Bioinformatics",
+    "OMXML",
+    "Organism Model XML",
+    "Validation"
+  ],
+  "description": "Organism Model XML (OMXML) is an XML schema for modeling organisms at various levels of biological organization, featuring validation and evolutionary simulation capabilities.",
+  "scripts": {
+    "build": "tsc",
+    "validate:all": "npm run build && node dist/validate-all.js",
+    "validate:latest": "npm run build && node dist/validate-latest.js"
+  },
+  "main": "dist/validate.js",
+  "directories": {
+    "doc": "docs",
+    "example": "examples"
+  },
+  "dependencies": {
+    "libxmljs": "1.0.11"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "typescript": "5.7.2"
+  }
+}
