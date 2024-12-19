@@ -55,13 +55,6 @@
         <system id="sys_circulatory" type="transport">
             <description>Transports gases and nutrients between systems.</description>
             <resourceFlows>
-                <receiveFromSystems>
-                    <receive resourceName="oxygen" amount="8" sourceSystemId="sys_respiratory"/>
-                    <receive resourceName="glucose" amount="5" sourceSystemId="sys_digestive"/>
-                    <receive resourceName="ATP" amount="3" sourceSystemId="sys_digestive"/>
-                    <receive resourceName="carbonDioxide" amount="2" sourceSystemId="sys_nervous"/>
-                    <receive resourceName="carbonDioxide" amount="1" sourceSystemId="sys_sensory"/>
-                </receiveFromSystems>
                 <transferToSystems>
                     <transfer resourceName="oxygen" amount="4" targetSystemId="sys_nervous"/>
                     <transfer resourceName="oxygen" amount="4" targetSystemId="sys_sensory"/>
@@ -70,6 +63,13 @@
                     <transfer resourceName="ATP" amount="2" targetSystemId="sys_nervous"/>
                     <transfer resourceName="ATP" amount="1" targetSystemId="sys_sensory"/>
                 </transferToSystems>
+                <receiveFromSystems>
+                    <receive resourceName="oxygen" amount="8" sourceSystemId="sys_respiratory"/>
+                    <receive resourceName="glucose" amount="5" sourceSystemId="sys_digestive"/>
+                    <receive resourceName="ATP" amount="3" sourceSystemId="sys_digestive"/>
+                    <receive resourceName="carbonDioxide" amount="2" sourceSystemId="sys_nervous"/>
+                    <receive resourceName="carbonDioxide" amount="1" sourceSystemId="sys_sensory"/>
+                </receiveFromSystems>
                 <outputs>
                     <output resourceName="carbonDioxide" amount="3"/>
                 </outputs>
