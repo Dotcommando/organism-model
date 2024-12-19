@@ -16,7 +16,7 @@
   ],
   "description": "Organism Model XML (OMXML) is an XML schema for modeling organisms at various levels of biological organization, featuring validation and evolutionary simulation capabilities.",
   "scripts": {
-    "build": "tsc",
+    "build": "rimraf dist && cpx \"examples/**/*\" dist/examples && cpx \"xsd/**/*\" dist/xsd && tsc",
     "validate:all": "npm run build && node dist/validate-all.js",
     "validate:latest": "npm run build && node dist/validate-latest.js"
   },
@@ -30,6 +30,8 @@
   },
   "devDependencies": {
     "@types/node": "22.10.2",
+    "cpx": "1.5.0",
+    "rimraf": "6.0.1",
     "typescript": "5.7.2"
   }
 }
