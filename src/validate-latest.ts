@@ -54,7 +54,7 @@ function main() {
   const latestVersion = sortedVersions[sortedVersions.length - 1];
   const latestExamplesDir = path.join(examplesDir, latestVersion);
 
-  const xmlFiles = fs.readdirSync(latestExamplesDir).filter(f => f.endsWith('.xml'));
+  const xmlFiles = fs.readdirSync(latestExamplesDir).filter(f => f.endsWith('.xml') || f.endsWith('.omxml'));
 
   if (xmlFiles.length === 0) {
     console.warn(`No XML files found in ${latestExamplesDir}.`);

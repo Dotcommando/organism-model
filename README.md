@@ -85,8 +85,7 @@ Once you have the DNA that can generate an initial population, you can begin exp
 
 ## Roadmap
 
-- 0.1.0 - 0.2.0: External signals from the environment to Organism. Actions: how Organism influences the environment. Internal signals: interactions between Cells, Organs and Systems in Organism.
-- 0.2.0 - 0.3.0: Improvements at the chemical level. An optional feature will be introduced to specify the exact chemical reactions used for substance transformations in some systems.
+- 0.2.0 - 0.3.0: Ability to exchange substances with a new organism (or organisms) in cases of pregnancy or parasitic infection.
 - 0.3.0 - 0.4.0: Detailed representation at the systems and organs level.
 - 0.5.0 - 0.6.0: Interaction between systems represented at the system level and systems represented at the organ level.
 - ???: Plans do not extend that far yet.

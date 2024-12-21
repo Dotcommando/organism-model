@@ -51,7 +51,7 @@ function main() {
       continue;
     }
 
-    const xmlFiles = fs.readdirSync(exampleVersionDir).filter(f => f.endsWith('.xml'));
+    const xmlFiles = fs.readdirSync(exampleVersionDir).filter(f => f.endsWith('.xml') || f.endsWith('.omxml'));
 
     if (xmlFiles.length === 0) {
       console.warn(`No XML files found in ${exampleVersionDir}.`);

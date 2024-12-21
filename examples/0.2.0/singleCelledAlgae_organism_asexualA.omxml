@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Single-celled algae, organism-level detail, asexual reproduction (Variant A).
+  Divides if (livingPlantOrganic >= 10, ATP >= 10) and divisionCount < 10; dies if divisionCount >= 10.
+
+  Demonstrates 3 lifecycle stages (young, adult, old), each with its own composition.
+  Death does not explicitly produce deadPlantOrganic or other breakdown products, since
+  the external simulation engine can infer how to handle decomposition based on composition.
+-->
+<OrganismModel version="0.2.0"
+               xmlns="https://dotcommando.github.io/organism-model/xsd/0.2.0/organism-model.xsd"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="https://dotcommando.github.io/organism-model/xsd/0.2.0/organism-model.xsd https://dotcommando.github.io/organism-model/xsd/0.2.0/organism-model.xsd">
+
+    <metadata>
+        <species>singleCelledAlgae_AsexualA</species>
+        <id>algaeAsxA</id>
+        <birthTimestamp>2025-01-01T00:00:00Z</birthTimestamp>
+        <sexRef id="none"/>
+    </metadata>
+
+    <Resources>
+        <!-- Simple resources -->
+        <resource name="lightEnergy" type="simple"/>
+        <resource name="oxygen" type="simple"/>
+        <resource name="carbon" type="simple"/>
+        <resource name="nitrogen" type="simple"/>
+        <resource name="phosphorus" type="simple"/>
+        <resource name="potassium" type="simple"/>
+        <resource name="water" type="simple"/>
+
+        <!-- Complex resources -->
+        <resource name="carbonDioxide" type="complex"/>
+        <resource name="glucose" type="complex"/>
+        <resource name="ATP" type="complex"/>
+        <resource name="livingPlantOrganic" type="complex"/>
+        <resource name="deadPlantOrganic" type="complex"/>
+        <resource name="livingAnimalOrganic" type="complex"/>
+        <resource name="deadAnimalOrganic" type="complex"/>
+        <resource name="excrement" type="complex"/>
+    </Resources>
+
+    <!-- Overall resource flows for the entire environment or model context (optional). -->
+    <resourceFlows>
+        <consumption>
+            <!-- Consumes glucose for baseline metabolism. -->
+            <consume resourceName="glucose" amount="2.0"/>
+            <!-- Also consumes carbonDioxide for photosynthesis-like processes. -->
+            <consume resourceName="carbonDioxide" amount="3.0"/>
+        </consumption>
+        <outputs>
+            <!-- Produces oxygen as a by-product. -->
+            <output resourceName="oxygen" amount="2.0"/>
+        </outputs>
+    </resourceFlows>
+
+    <!--
+      Instead of wrapping the entire organism in a system, define it as an <organism>
+      so it is valid under the new OMXML 0.2.0 schema.
+    -->
+    <Organisms>
+        <organism id="algaeAsxA_Organism" species="singleCelledAlgae_AsexualA">
+            <description>Single-celled algae with asexual division.</description>
+
+            <!-- Resource flows specific to the organism. -->
+            <resourceFlows>
+                <consumption>
+                    <!-- Additional consumption per cycle for the organism itself. -->
+                    <consume resourceName="glucose" amount="1.0"/>
+                    <consume resourceName="carbonDioxide" amount="2.0"/>
+                </consumption>
+                <outputs>
+                    <!-- Possibly outputs extra oxygen. -->
+                    <output resourceName="oxygen" amount="1.0"/>
+                </outputs>
+            </resourceFlows>
+
+            <!--
+              The composition indicates what materials (e.g. livingPlantOrganic, ATP) the organism
+              physically contains at a given time. The simulation engine will track changes to these
+              resources as the organism grows, divides, or dies.
+            -->
+            <composition>
+                <!-- Example default composition: can be minimal at creation or can rely on lifecycleStages below. -->
+            </composition>
+
+            <!-- Lifecycle stages: young, adult, old. -->
+            <lifecycleStages>
+                <stage id="young">
+                    <description>Young stage</description>
+                    <composition>
+                        <!-- Minimal organic and ATP storage. -->
+                        <component resourceName="livingPlantOrganic" amount="2.0"/>
+                        <component resourceName="ATP" amount="2.0"/>
+                    </composition>
+                </stage>
+
+                <stage id="adult">
+                    <description>Adult stage</description>
+                    <composition>
+                        <!-- Larger amounts, reflecting growth. -->
+                        <component resourceName="livingPlantOrganic" amount="10.0"/>
+                        <component resourceName="ATP" amount="10.0"/>
+                    </composition>
+                </stage>
+
+                <stage id="old">
+                    <description>Old stage</description>
+                    <composition>
+                        <!-- Somewhat reduced organic and ATP. -->
+                        <component resourceName="livingPlantOrganic" amount="5.0"/>
+                        <component resourceName="ATP" amount="5.0"/>
+                    </composition>
+                </stage>
+            </lifecycleStages>
+
+            <!--
+              Internal state for counters like divisionCount.
+              Additional variables could track e.g. "stageTransitionCount".
+            -->
+            <internalState>
+                <stateVariable name="divisionCount" value="0"/>
+            </internalState>
+        </organism>
+    </Organisms>
+
+    <!--
+      Processes define how the organism divides and dies, referencing the organism at layer="organism".
+    -->
+    <Processes>
+        <process id="divisionProcess">
+            <description>
+                Divide asexually if livingPlantOrganic >= 10 and ATP >= 10 and divisionCount &lt; 10.
+                On division, half of the parent's livingPlantOrganic and ATP are conceptually transferred
+                to the new offspring (the external simulation engine will handle the actual resource splitting).
+            </description>
+            <trigger>
+                <conditions>
+                    <!-- Must have enough livingPlantOrganic and ATP to divide. -->
+                    <resourceCondition resourceName="livingPlantOrganic" minAmount="10.0"/>
+                    <resourceCondition resourceName="ATP" minAmount="10.0"/>
+                    <!-- And not exceed 10 divisions. -->
+                    <stateCondition name="divisionCount" maxValue="9.9999"/>
+                </conditions>
+            </trigger>
+            <entitiesInvolved>
+                <entityRef id="algaeAsxA_Organism" layer="organism"/>
+            </entitiesInvolved>
+            <resourceIO>
+                <!-- Indicates some consumption to initiate division (e.g., energy cost). -->
+                <input resourceName="ATP" amount="2.0"/>
+                <!--
+                  We do not explicitly transfer half the livingPlantOrganic or ATP here,
+                  because the new standard uses <organismSpawns> for creation.
+                  The external engine can then handle resource distribution.
+                -->
+            </resourceIO>
+
+            <!-- Increment divisionCount. -->
+            <stateChanges>
+                <stateChange name="divisionCount" operation="add" operand="1.0"/>
+            </stateChanges>
+
+            <!--
+              Use <organismSpawns> to indicate creating a new instance
+              of the same species. The external engine will handle half-resource transfer.
+            -->
+            <organismSpawns>
+                <spawn species="singleCelledAlgae_AsexualA" count="1"/>
+            </organismSpawns>
+        </process>
+
+        <process id="deathProcess">
+            <description>
+                Dies if divisionCount >= 10. The external simulation engine then decomposes
+                livingPlantOrganic and ATP into deadPlantOrganic, carbonDioxide, or other
+                by-products according to the chemistry rules of the environment.
+            </description>
+            <trigger>
+                <conditions>
+                    <stateCondition name="divisionCount" minValue="10.0"/>
+                </conditions>
+            </trigger>
+            <entitiesInvolved>
+                <entityRef id="algaeAsxA_Organism" layer="organism"/>
+            </entitiesInvolved>
+            <!--
+              We do not define explicit resource outputs here, because
+              decomposition is handled externally based on composition.
+            -->
+        </process>
+    </Processes>
+
+    <Cycles>
+        <cycle id="mainCycle">
+            <description>Checks division and death conditions once per day.</description>
+            <trigger/>
+            <entitiesInvolved>
+                <entityRef id="algaeAsxA_Organism" layer="organism"/>
+            </entitiesInvolved>
+            <processRefs>
+                <processRef id="divisionProcess"/>
+                <processRef id="deathProcess"/>
+            </processRefs>
+            <!-- Repeats daily. -->
+            <repetition repeat="true" interval="1.0" intervalUnits="d"/>
+        </cycle>
+    </Cycles>
+
+</OrganismModel>
