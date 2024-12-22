@@ -13,6 +13,43 @@ Moreover, you can begin evolution with organisms described at the Systems level 
 
 Organism Model XML does not include genes. It is assumed that you will create your own encoding system that simulates genes, with OMXML documents being the output of genome execution on a computer.
 
+## Chemistry
+
+The description of an organism implies a minimal description of the basic chemical components of the world. Chemical reactions between these components should be described outside the OMXML document, as the reactions are unrelated to the organism. An example of describing the basic chemical components of the world:
+
+```xml
+    <Resources>
+    <!-- Simple resources -->
+    <resource name="lightEnergy" type="simple"/>
+    <resource name="oxygen" type="simple"/>
+    <resource name="carbon" type="simple"/>
+    <resource name="nitrogen" type="simple"/>
+    <resource name="phosphorus" type="simple"/>
+    <resource name="potassium" type="simple"/>
+    <resource name="water" type="simple"/>
+
+    <!-- Complex resources -->
+    <resource name="carbonDioxide" type="complex"/>
+    <resource name="glucose" type="complex"/>
+    <resource name="ATP" type="complex"/>
+    <resource name="livingPlantOrganic" type="complex"/>
+    <resource name="deadPlantOrganic" type="complex"/>
+    <resource name="livingAnimalOrganic" type="complex"/>
+    <resource name="deadAnimalOrganic" type="complex"/>
+    <resource name="excrement" type="complex"/>
+</Resources>
+```
+
+## Principles of OMXML
+
+1. A document simultaneously serves as a description of a species and an individual with specific characteristics, similar to how an animal's body contains proteins characteristic of the entire species, as well as individual anatomical features that distinguish an individual from the population.
+2. The concept of layers. An organism can be described at any level: Organism, System, Organ, Cell, Organelle. However, if a researcher decides to describe the cells of a particular organ, then all higher layers must be described. That is, if a researcher describes organelles, there must be a cell of which it is a part, an organ, a system, and finally the organism.
+3. The concept of entities. Each layer consists of entities. For example, the organism layer has only one entity—the organism itself. However, a single document can describe multiple organisms, which is necessary to describe phenomena such as the division of unicellular organisms, pregnancy, symbionts, and parasite infections. At the system level, each system is an entity. At the organ level, each organ is an entity. When we refer to "organism entities," we mean all entities of each layer. These can simultaneously be organelles, cells, organs, and systems.
+4. Arbitrary allocation of entities. A particular system may be detailed down to the Organelle layer; this does not mean that other systems must be described to the same layer. On the contrary, other entities may not be described at all. Their functions (of the undisclosed systems) can be attributed to the organism as a whole.
+5. Do not specify the main characteristics directly with numbers. For example, we do not state that a muscle's strength is "10". Instead, we indicate how many resources the muscle consumes and releases, and how many resources the organism as a whole consumes and releases. The world's system, which contains this organism, calculates strength at each moment based on the world's chemistry, on how many resources the circulatory system delivers to the muscle, and how many waste products the lymphatic system manages to remove. If such systems do not exist, and other systems/organs/cells/organelles also consume and release substances, resulting in a situation where all organs/cells/systems are deprived of nutrients and waste products are not removed in time, penalties are distributed to the organism's entities according to the world's rules.
+6. Each entity must contain a certain amount of substance (the &lt;composition&gt; element). This serves two purposes. First, to ensure that the substance in the world does not decrease or increase during the organism's life processes but is only transformed from one form to another through the world's chemistry with the release and absorption of energy. Second, to accurately calculate the amount of substance that needs to be returned to the world in the event of the organism's death.
+7. Since the OMXML format does not describe the genome but only the applied level of the organism, it is natural that the XML created by an external DNA system will most often be invalid according to the OMXML standard. This is considered normal and reflects the real state of affairs in evolution, where nature does not always follow the most optimal path. Because the document will be parsed by the world system, it is assumed that the world system will be able to read an invalid OMXML document, executing what it can comprehend from it, similar to a browser that will display any HTML document, even if it is invalid.
+
 ## Use Cases
 
 You might want to explore different branches of evolution and seek answers to "What if..." questions.
